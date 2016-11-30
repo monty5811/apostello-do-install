@@ -1,6 +1,20 @@
 const path = require("path");
 const webpack = require("webpack");
 
+if (process.env.WATCH) {
+  elmLoader = 'elm-webpack?debug=true';
+  plugins = [];
+} else {
+  elmLoader = 'elm-webpack';
+  plugins = [
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+        warnings: false
+      }
+    })
+  ];
+}
+
 module.exports = {
   entry: {
     app: [
@@ -26,18 +40,12 @@ module.exports = {
       {
         test: /\.elm$/,
         exclude: [/elm-stuff/, /node_modules/],
-        loader: 'elm-webpack',
+        loader: elmLoader,
       },
     ],
     noParse: /\.elm$/,
   },
-  plugins: [
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false
-      }
-    })
-  ],
+  plugins: plugins,
   devServer: {
     inline: true,
     stats: { colors: true },

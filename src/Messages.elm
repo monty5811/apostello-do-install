@@ -19,3 +19,4 @@ type Msg
     | ReceiveAction (Result Http.Error Action)
     | CheckDropletStatus
     | ReceiveDroplet (Result Http.Error Droplet)
+    | UpdateApostelloConfig String String

@@ -3,6 +3,7 @@ module Helpers exposing (..)
 import DigitalOcean.Models exposing (..)
 import Models exposing (Flags, Model, Step(..), RespStatus(..))
 import Regex
+import Dict
 
 
 initialModel : Flags -> Model
@@ -23,6 +24,7 @@ initialModel flags =
         , createResp = Nothing
         , createAction = Nothing
         , currentStep = step
+        , apostello = Dict.empty
         }
 
 

@@ -4,6 +4,9 @@ import DigitalOcean.Api exposing (..)
 import Http
 import Messages exposing (..)
 import Models exposing (..)
+import Random
+import Random.String
+import Random.Char
 
 
 fetchData : Model -> Cmd Msg
@@ -22,9 +25,14 @@ fetchData model =
             Cmd.none
 
 
+generateRandomApostelloVal : String -> Cmd Msg
+generateRandomApostelloVal field =
+    Random.generate (UpdateApostelloConfig field) (Random.String.string 64 Random.Char.english)
+
+
 deployDroplet : Model -> Cmd Msg
 deployDroplet model =
-    Http.send ReceiveCreateResp (postCreateDroplet model.accessToken model.config)
+    Http.send ReceiveCreateResp (postCreateDroplet model.accessToken model.config model.apostello)
 
 
 fetchSSHKeys : Model -> Cmd Msg

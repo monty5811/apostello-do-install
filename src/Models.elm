@@ -1,6 +1,7 @@
 module Models exposing (..)
 
 import DigitalOcean.Models exposing (..)
+import Dict
 
 
 type Step
@@ -18,6 +19,10 @@ type RespStatus
     | RespOk
 
 
+type alias ApostelloConfig =
+    Dict.Dict String String
+
+
 type alias Model =
     { url : String
     , accessToken : Maybe String
@@ -27,6 +32,7 @@ type alias Model =
     , createResp : Maybe CreateResp
     , createAction : Maybe Action
     , currentStep : Step
+    , apostello : ApostelloConfig
     }
 
 

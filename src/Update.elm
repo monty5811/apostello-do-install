@@ -5,6 +5,7 @@ import DigitalOcean.Models exposing (..)
 import Helpers exposing (..)
 import Messages exposing (..)
 import Models exposing (..)
+import Dict
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -57,6 +58,13 @@ update msg model =
                     { config | size = size }
             in
                 ( { model | config = newConfig }, Cmd.none )
+
+        UpdateApostelloConfig k v ->
+            let
+                newConfig =
+                    Dict.insert k v model.apostello
+            in
+                ( { model | apostello = newConfig }, Cmd.none )
 
         Deploy ->
             ( { model | currentStep = Deploying NoResp }, deployDroplet model )

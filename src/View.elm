@@ -7,6 +7,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onClick)
 import Messages exposing (Msg(..))
 import Models exposing (..)
+import Dict
 
 
 view : Model -> Html Msg
@@ -185,18 +186,102 @@ noKeysView =
 
 setupView : Model -> Html Msg
 setupView model =
-    div
-        [ class "ui raised segment" ]
-        [ div [ class "ui three column grid" ]
-            [ div [ class "centered row" ]
-                [ div [ class "column" ] (chooseSSHKeyView model)
-                , div [ class "column" ] (chooseRegionView model)
-                , div [ class "column" ] (chooseSizeView model)
+    div []
+        [ div
+            [ class "ui raised segment" ]
+            [ div []
+                [ div [ class "centered row" ]
+                    [ h2 [] [ text "Digital Ocean Options" ]
+                    , div [ class "ui three column grid" ]
+                        [ div [ class "column" ] (chooseSSHKeyView model)
+                        , div [ class "column" ] (chooseRegionView model)
+                        , div [ class "column" ] (chooseSizeView model)
+                        ]
+                    ]
+                , uiDivider
+                ]
+            ]
+        , div [ class "ui raised segment" ]
+            [ h2 [] [ text "apostello Configuration" ]
+            , div [ class "centered row" ]
+                [ apostelloSetup model.apostello
                 ]
             , uiDivider
-            , div [ class "centered row" ]
-                [ div [ class "ten wide column" ] [ deployButton model ]
+            ]
+        , div [ class "ui raised segment" ]
+            [ div [ class "centered row" ]
+                [ div [] [ deployButton model ]
                 ]
+            ]
+        ]
+
+
+formField : String -> String -> Maybe String -> (String -> Msg) -> Html Msg
+formField name pholder help handler =
+    let
+        helpDiv =
+            case help of
+                Just helpText ->
+                    div [ class "ui label" ] [ text helpText ]
+
+                Nothing ->
+                    div [] []
+    in
+        div [ class "field" ]
+            [ label [] [ text name ]
+            , input [ type_ "text", placeholder pholder, onInput handler ] []
+            , helpDiv
+            ]
+
+
+apostelloFormHelp : Html Msg
+apostelloFormHelp =
+    div []
+        [ p [] [ text "We need some Twilio and email settings to setup apostello. You can change these values later by logging into your server, but adding them now is the easiest way to get up and running." ]
+        , p []
+            [ text "You can find more information in the "
+            , a
+                [ href "https://apostello.readthedocs.io/"
+                , target "_blank"
+                ]
+                [ text "documentation" ]
+            , text "."
+            ]
+        , p []
+            [ a [ href "https://www.mailgun.com/", target "_blank" ]
+                [ text "Mailgun"
+                ]
+            , text " is recommended for sending emails."
+            ]
+        ]
+
+
+apostelloSetup : ApostelloConfig -> Html Msg
+apostelloSetup config =
+    div [ class "twelve wide column" ]
+        [ Html.form [ class "ui equal width form" ]
+            [ apostelloFormHelp
+            , h3 [] [ text "Twilio Settings" ]
+            , div [ class "fields" ]
+                [ formField "Twilio Number" "Find me on Twilio" Nothing (UpdateApostelloConfig "fromNum")
+                , formField "Twilio Account SID" "Find me on Twilio" Nothing (UpdateApostelloConfig "accountSID")
+                ]
+            , div [ class "fields" ]
+                [ formField "Twilio Auth Token" "Find me on Twilio" Nothing (UpdateApostelloConfig "authToken")
+                , formField "Twilio Sending Cost" "Find me on Twilio" (Just "0.04 for UK, 0.0075 for USA, https://www.twilio.com/sms/pricing for all prices") (UpdateApostelloConfig "sendingCost")
+                ]
+            , h3 [] [ text "Email Settings" ]
+            , div [ class "fields" ]
+                [ formField "Email host" "" Nothing (UpdateApostelloConfig "emailHost")
+                , formField "Email to send from" "" Nothing (UpdateApostelloConfig "email")
+                ]
+            , div [ class "fields" ]
+                [ formField "Email user" "" Nothing (UpdateApostelloConfig "emailUser")
+                , formField "Email password" "" Nothing (UpdateApostelloConfig "emailPass")
+                ]
+            , h3 [] [ text "Other Settings" ]
+            , div [ class "fields" ]
+                [ formField "Time Zone" "Europe/London" (Just "A timezone from this list: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones") (UpdateApostelloConfig "timeZone") ]
             ]
         ]
 
@@ -219,7 +304,7 @@ deployButton model =
 chooseSSHKeyView : Model -> List (Html Msg)
 chooseSSHKeyView model =
     [ h3 [] [ text "Please choose your SSH key(s)" ]
-    , div [ class "ui list" ] (List.map (sshKeyView model.config.keys) model.sshKeys)
+    , div [] (List.map (sshKeyView model.config.keys) model.sshKeys)
     ]
 
 
@@ -241,19 +326,17 @@ labelClass active current =
 
 sshKeyView : List SSHKey -> SSHKey -> Html Msg
 sshKeyView activeKeys key =
-    div [ class "ui item" ]
-        [ div
-            [ class (sshLabelClass activeKeys key)
-            , onClick (ChooseSSHKey key)
-            ]
-            [ text key.name ]
+    div
+        [ class (sshLabelClass activeKeys key)
+        , onClick (ChooseSSHKey key)
         ]
+        [ text key.name ]
 
 
 chooseRegionView : Model -> List (Html Msg)
 chooseRegionView model =
     [ h3 [] [ text "Choose a region" ]
-    , div [ class "ui list" ]
+    , div []
         (List.map (regionView model.config.region) <|
             List.filter (\r -> List.member "metadata" r.features) model.regions
         )
@@ -262,31 +345,27 @@ chooseRegionView model =
 
 regionView : Region -> Region -> Html Msg
 regionView activeRegion region =
-    div []
-        [ div
-            [ class (labelClass activeRegion region)
-            , onClick (ChooseRegion region)
-            ]
-            [ text region.name ]
+    div
+        [ class (labelClass activeRegion region)
+        , onClick (ChooseRegion region)
         ]
+        [ text region.name ]
 
 
 chooseSizeView : Model -> List (Html Msg)
 chooseSizeView model =
     [ h3 [] [ text "Choose a droplet size" ]
-    , div [ class "ui list" ] (List.map (sizeView model.config.size) model.config.region.sizes)
+    , div [] (List.map (sizeView model.config.size) model.config.region.sizes)
     ]
 
 
 sizeView : String -> String -> Html Msg
 sizeView activeSize size =
-    div [ class "ui item" ]
-        [ div
-            [ class (labelClass activeSize size)
-            , onClick (ChooseSize size)
-            ]
-            [ text size ]
+    div
+        [ class (labelClass activeSize size)
+        , onClick (ChooseSize size)
         ]
+        [ text size ]
 
 
 deployedView : Model -> Html Msg

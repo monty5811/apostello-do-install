@@ -3,24 +3,31 @@ module DigitalOcean.Api exposing (..)
 import DigitalOcean.Decoders exposing (..)
 import DigitalOcean.Encoders exposing (..)
 import DigitalOcean.Models exposing (..)
+import Models exposing (ApostelloConfig)
 import Http
 import Json.Decode as Decode
+import Regex
 
 
 doRequest : String -> String -> String -> Http.Body -> Decode.Decoder a -> Http.Request a
 doRequest method url token body decoder =
-    Http.request
-        { method = method
-        , headers =
-            [ Http.header "Content-Type" "application/json"
-            , Http.header "Authorization" ("Bearer " ++ token)
-            ]
-        , url = url
-        , body = body
-        , expect = Http.expectJson decoder
-        , timeout = Nothing
-        , withCredentials = True
-        }
+    let
+        secureUrl =
+            url
+                |> Regex.replace Regex.All (Regex.regex "http://") (\_ -> "https://")
+    in
+        Http.request
+            { method = method
+            , headers =
+                [ Http.header "Content-Type" "application/json"
+                , Http.header "Authorization" ("Bearer " ++ token)
+                ]
+            , url = secureUrl
+            , body = body
+            , expect = Http.expectJson decoder
+            , timeout = Nothing
+            , withCredentials = True
+            }
 
 
 doGet : String -> Maybe String -> Decode.Decoder a -> Http.Request a
@@ -60,9 +67,9 @@ getAction token droplet =
         doGet url token (Decode.at [ "action" ] actionDecoder)
 
 
-postCreateDroplet : Maybe String -> Config -> Http.Request CreateResp
-postCreateDroplet token config =
-    doPost "https://api.digitalocean.com/v2/droplets" token (createDropletBody config) decodeCreateDropletResp
+postCreateDroplet : Maybe String -> Config -> ApostelloConfig -> Http.Request CreateResp
+postCreateDroplet token config apostello =
+    doPost "https://api.digitalocean.com/v2/droplets" token (createDropletBody config apostello) decodeCreateDropletResp
 
 
 getDropletInfo : Maybe String -> Maybe CreateResp -> Http.Request Droplet

@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Actions exposing (fetchData)
+import Actions exposing (fetchData, generateRandomApostelloVal)
 import Helpers exposing (initialModel)
 import Html exposing (programWithFlags)
 import Messages exposing (Msg(..))
@@ -26,4 +26,10 @@ init flags =
         model =
             initialModel flags
     in
-        ( model, fetchData model )
+        ( model
+        , Cmd.batch
+            [ fetchData model
+            , generateRandomApostelloVal "dbPass"
+            , generateRandomApostelloVal "secretKey"
+            ]
+        )
