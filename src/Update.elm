@@ -1,11 +1,11 @@
 module Update exposing (update)
 
 import Actions exposing (..)
+import Dict
 import DigitalOcean.Models exposing (..)
 import Helpers exposing (..)
 import Messages exposing (..)
 import Models exposing (..)
-import Dict
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -37,7 +37,7 @@ update msg model =
                 newConfig =
                     { config | keys = addOrRemoveKey model.config.keys key }
             in
-                ( { model | config = newConfig }, Cmd.none )
+            ( { model | config = newConfig }, Cmd.none )
 
         ChooseRegion region ->
             let
@@ -47,7 +47,7 @@ update msg model =
                 newConfig =
                     { config | region = region, size = "512mb" }
             in
-                ( { model | config = newConfig }, Cmd.none )
+            ( { model | config = newConfig }, Cmd.none )
 
         ChooseSize size ->
             let
@@ -57,14 +57,14 @@ update msg model =
                 newConfig =
                     { config | size = size }
             in
-                ( { model | config = newConfig }, Cmd.none )
+            ( { model | config = newConfig }, Cmd.none )
 
         UpdateApostelloConfig k v ->
             let
                 newConfig =
                     Dict.insert k v model.apostello
             in
-                ( { model | apostello = newConfig }, Cmd.none )
+            ( { model | apostello = newConfig }, Cmd.none )
 
         Deploy ->
             ( { model | currentStep = Deploying NoResp }, deployDroplet model )
@@ -104,14 +104,14 @@ update msg model =
                     { model | createResp = newResp }
 
                 step =
-                    case (dropletIP model) of
+                    case dropletIP model of
                         Just ip ->
                             Deployed
 
                         Nothing ->
                             Deploying RespOk
             in
-                ( { newModel | currentStep = step }, Cmd.none )
+            ( { newModel | currentStep = step }, Cmd.none )
 
         ReceiveDroplet (Err _) ->
             ( model, Cmd.none )

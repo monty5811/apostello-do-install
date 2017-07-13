@@ -1,9 +1,9 @@
 module Helpers exposing (..)
 
-import DigitalOcean.Models exposing (..)
-import Models exposing (Flags, Model, Step(..), RespStatus(..))
-import Regex
 import Dict
+import DigitalOcean.Models exposing (..)
+import Models exposing (Flags, Model, RespStatus(..), Step(..))
+import Regex
 
 
 initialModel : Flags -> Model
@@ -12,20 +12,20 @@ initialModel flags =
         ( step, token ) =
             parseAccessToken flags.url
     in
-        { url = flags.url
-        , accessToken = token
-        , sshKeys = []
-        , regions = []
-        , config =
-            { region = defaultRegion
-            , keys = []
-            , size = "512mb"
-            }
-        , createResp = Nothing
-        , createAction = Nothing
-        , currentStep = step
-        , apostello = Dict.empty
+    { url = flags.url
+    , accessToken = token
+    , sshKeys = []
+    , regions = []
+    , config =
+        { region = defaultRegion
+        , keys = []
+        , size = "512mb"
         }
+    , createResp = Nothing
+    , createAction = Nothing
+    , currentStep = step
+    , apostello = Dict.empty
+    }
 
 
 baseUrl : String -> String
@@ -53,12 +53,12 @@ parseAccessToken url =
                 Nothing ->
                     Nothing
     in
-        case token of
-            Just t ->
-                ( PullData NoResp, token )
+    case token of
+        Just t ->
+            ( PullData NoResp, token )
 
-            Nothing ->
-                ( NotLoggedIn, token )
+        Nothing ->
+            ( NotLoggedIn, token )
 
 
 addOrRemoveKey : List SSHKey -> SSHKey -> List SSHKey
@@ -102,9 +102,9 @@ dropletIP model =
         network =
             dropletV4 model
     in
-        case network of
-            Just net ->
-                Just net.ip_address
+    case network of
+        Just net ->
+            Just net.ip_address
 
-            Nothing ->
-                Nothing
+        Nothing ->
+            Nothing

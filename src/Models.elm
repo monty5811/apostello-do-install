@@ -1,7 +1,7 @@
 module Models exposing (..)
 
-import DigitalOcean.Models exposing (..)
 import Dict
+import DigitalOcean.Models exposing (..)
 
 
 type Step

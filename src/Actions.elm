@@ -5,8 +5,8 @@ import Http
 import Messages exposing (..)
 import Models exposing (..)
 import Random
-import Random.String
 import Random.Char
+import Random.String
 
 
 fetchData : Model -> Cmd Msg

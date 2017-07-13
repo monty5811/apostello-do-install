@@ -1,10 +1,10 @@
 module DigitalOcean.Encoders exposing (..)
 
+import Dict
 import DigitalOcean.Models exposing (..)
-import Models exposing (ApostelloConfig)
 import Http
 import Json.Encode as Encode
-import Dict
+import Models exposing (ApostelloConfig)
 
 
 encodeBody : List ( String, Encode.Value ) -> Http.Body
@@ -74,7 +74,7 @@ userData config =
         timeZone =
             Maybe.withDefault "Europe/London" (Dict.get "timeZone" config)
     in
-        """#cloud-config
+    """#cloud-config
 users:
   - name: apostello
     groups: sudo

@@ -26,10 +26,10 @@ init flags =
         model =
             initialModel flags
     in
-        ( model
-        , Cmd.batch
-            [ fetchData model
-            , generateRandomApostelloVal "dbPass"
-            , generateRandomApostelloVal "secretKey"
-            ]
-        )
+    ( model
+    , Cmd.batch
+        [ fetchData model
+        , generateRandomApostelloVal "dbPass"
+        , generateRandomApostelloVal "secretKey"
+        ]
+    )

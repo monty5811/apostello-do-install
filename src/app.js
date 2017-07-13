@@ -1,8 +1,8 @@
 const Elm = require('./Main.elm');
 
-require("./index.html");
-require("./static/favicon.ico");
-require("./static/apostello-logo.svg");
+require('./index.html');
+require('./static/favicon.ico');
+require('./static/apostello-logo.svg');
 
 function handleDOMContentLoaded() {
   // setup elm
@@ -10,7 +10,7 @@ function handleDOMContentLoaded() {
     url: document.URL,
   });
   app.ports.event.subscribe(function(e) {
-    ga('send', 'event', e.cat, e.act)
+    ga('send', 'event', e.cat, e.act);
   });
 }
 

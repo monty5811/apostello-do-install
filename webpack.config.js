@@ -2,10 +2,10 @@ const path = require("path");
 const webpack = require("webpack");
 
 if (process.env.WATCH) {
-  elmLoader = 'elm-webpack?debug=true';
+  elmLoader = 'elm-webpack-loader?debug=true';
   plugins = [];
 } else {
-  elmLoader = 'elm-webpack';
+  elmLoader = 'elm-webpack-loader';
   plugins = [
     new webpack.optimize.UglifyJsPlugin({
       compress: {
@@ -30,12 +30,12 @@ module.exports = {
       {
         test: /\.html$/,
         exclude: /node_modules/,
-        loader: 'file?name=[name].[ext]',
+        loader: 'file-loader?name=[name].[ext]',
       },
       {
         test: /\.jpe?g$|\.gif$|\.png$|\.svg$|\.woff$|\.ttf$|\.wav$|\.mp3|\.ico$/,
         exclude: /node_modules/,
-        loader: "file?name=[name].[ext]",
+        loader: "file-loader?name=[name].[ext]",
       },
       {
         test: /\.elm$/,

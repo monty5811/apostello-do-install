@@ -4,15 +4,20 @@
   "description": "",
   "dependencies": {
     "elm": "0.18.0",
-    "elm-webpack-loader": "3.1.0",
-    "file-loader": "0.9.0",
-    "webpack": "2.1.0-beta.25"
+    "elm-format": "exp",
+    "elm-webpack-loader": "^4.3.1",
+    "file-loader": "^0.11.2",
+    "prettier": "^1.5.2",
+    "webpack": "^3.2.0"
   },
   "scripts": {
     "prebuild": "elm-make --yes",
     "prestart": "npm run prebuild",
     "build": "webpack",
-    "watch": "WATCH=true webpack --watch --color --progress"
+    "watch": "WATCH=true webpack --watch --color --progress",
+    "format-elm": "elm-format --yes src",
+    "format-js": "prettier --single-quote --trailing-comma es5 --write \"src/**/*.js\"",
+    "format": "yarn format-elm && yarn format-js"
   },
   "author": "",
   "license": "MIT"

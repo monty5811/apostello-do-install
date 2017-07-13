@@ -2,7 +2,7 @@ module DigitalOcean.Decoders exposing (..)
 
 import DigitalOcean.Models exposing (..)
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (required, decode)
+import Json.Decode.Pipeline exposing (decode, required)
 
 
 decodeKey : Decoder SSHKey
