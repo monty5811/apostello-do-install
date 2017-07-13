@@ -1,13 +1,13 @@
 module View exposing (view)
 
+import Dict
 import DigitalOcean.Models exposing (..)
 import Helpers exposing (baseUrl, dropletIP)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput, onClick)
+import Html.Events exposing (onClick, onInput)
 import Messages exposing (Msg(..))
 import Models exposing (..)
-import Dict
 
 
 view : Model -> Html Msg
@@ -227,11 +227,11 @@ formField name pholder help handler =
                 Nothing ->
                     div [] []
     in
-        div [ class "field" ]
-            [ label [] [ text name ]
-            , input [ type_ "text", placeholder pholder, onInput handler ] []
-            , helpDiv
-            ]
+    div [ class "field" ]
+        [ label [] [ text name ]
+        , input [ type_ "text", placeholder pholder, onInput handler ] []
+        , helpDiv
+        ]
 
 
 apostelloFormHelp : Html Msg
@@ -373,7 +373,7 @@ deployedView model =
     div [ class "ui raised segment eight wide centered column" ]
         [ h2 [] [ text "Droplet created!" ]
         , p [] [ text "A droplet has been created and apostello is being installed." ]
-        , p [] [ text "It may take a few minutes for the install script to complete." ]
+        , p [] [ text "It may take a few minutes for the install script to set up the server." ]
         , p []
             [ text "Your instance of apostello will be avaiable at "
             , dropletLink (dropletIP model)
@@ -394,6 +394,15 @@ deployedView model =
                         ++ (Maybe.withDefault "" <|
                                 dropletIP model
                            )
+                ]
+            ]
+        , p []
+            [ text "You can monitor the progress by running this command:"
+            , pre []
+                [ text <|
+                    "ssh root@"
+                        ++ (Maybe.withDefault "" <| dropletIP model)
+                        ++ "tail -f /var/log/cloud-init-output.log"
                 ]
             ]
         ]
