@@ -402,7 +402,7 @@ deployedView model =
                 [ text <|
                     "ssh root@"
                         ++ (Maybe.withDefault "" <| dropletIP model)
-                        ++ "tail -f /var/log/cloud-init-output.log"
+                        ++ " tail -f /var/log/cloud-init-output.log"
                 ]
             ]
         ]
