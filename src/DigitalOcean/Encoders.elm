@@ -118,6 +118,8 @@ write_files:
        opbeat_secret_token:
        opbeat_js_org_id:
        opbeat_js_app_id:
+       cm_server_key:
+       cm_sender_id:
     path: /home/apostello/custom_vars.yml
 runcmd:
   - cd /home/apostello && curl -sf https://raw.githubusercontent.com/monty5811/apostello/master/scripts/ansible_install.sh | sh

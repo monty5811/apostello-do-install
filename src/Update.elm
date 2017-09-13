@@ -60,11 +60,11 @@ update msg model =
             ( { model | config = newConfig }, Cmd.none )
 
         UpdateApostelloConfig k v ->
-            let
-                newConfig =
-                    Dict.insert k v model.apostello
-            in
-            ( { model | apostello = newConfig }, Cmd.none )
+            ( { model
+                | apostello = Dict.insert k v model.apostello
+              }
+            , Cmd.none
+            )
 
         Deploy ->
             ( { model | currentStep = Deploying NoResp }, deployDroplet model )
@@ -106,7 +106,7 @@ update msg model =
                 step =
                     case dropletIP model of
                         Just ip ->
-                            Deployed
+                            Deployed ip
 
                         Nothing ->
                             Deploying RespOk

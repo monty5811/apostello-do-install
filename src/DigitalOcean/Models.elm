@@ -35,7 +35,11 @@ type alias Networks =
 
 
 type alias Network =
-    { ip_address : String }
+    { ip_address : IPAddress }
+
+
+type IPAddress
+    = IPAddress String
 
 
 type DropletStatus

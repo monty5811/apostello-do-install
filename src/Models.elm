@@ -1,7 +1,33 @@
-module Models exposing (..)
+module Models
+    exposing
+        ( ApostelloConfig
+        , Flags
+        , Model
+        , RespStatus
+            ( NoResp
+            , RespError
+            , RespOk
+            )
+        , Step
+            ( ChooseSetup
+            , Deployed
+            , DeployedNoIp
+            , Deploying
+            , NotLoggedIn
+            , PullData
+            )
+        )
 
 import Dict
-import DigitalOcean.Models exposing (..)
+import DigitalOcean.Models
+    exposing
+        ( Action
+        , Config
+        , CreateResp
+        , IPAddress
+        , Region
+        , SSHKey
+        )
 
 
 type Step
@@ -10,7 +36,7 @@ type Step
     | ChooseSetup
     | Deploying RespStatus
     | DeployedNoIp
-    | Deployed
+    | Deployed IPAddress
 
 
 type RespStatus

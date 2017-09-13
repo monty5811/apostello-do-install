@@ -84,8 +84,8 @@ innerView model =
         DeployedNoIp ->
             deployingView model
 
-        Deployed ->
-            deployedView model
+        Deployed ip ->
+            deployedView ip
 
 
 landingView : Model -> Html Msg
@@ -368,15 +368,15 @@ sizeView activeSize size =
         [ text size ]
 
 
-deployedView : Model -> Html Msg
-deployedView model =
+deployedView : IPAddress -> Html Msg
+deployedView (IPAddress ip) =
     div [ class "ui raised segment eight wide centered column" ]
         [ h2 [] [ text "Droplet created!" ]
         , p [] [ text "A droplet has been created and apostello is being installed." ]
         , p [] [ text "It may take a few minutes for the install script to set up the server." ]
         , p []
             [ text "Your instance of apostello will be avaiable at "
-            , dropletLink (dropletIP model)
+            , a [ href ("http://" ++ ip), target "_blank" ] [ text ip ]
             ]
         , p []
             [ text "Please look at the "
@@ -391,9 +391,7 @@ deployedView model =
             , pre []
                 [ text <|
                     "ssh root@"
-                        ++ (Maybe.withDefault "" <|
-                                dropletIP model
-                           )
+                        ++ ip
                 ]
             ]
         , p []
@@ -401,18 +399,8 @@ deployedView model =
             , pre []
                 [ text <|
                     "ssh root@"
-                        ++ (Maybe.withDefault "" <| dropletIP model)
+                        ++ ip
                         ++ " tail -f /var/log/cloud-init-output.log"
                 ]
             ]
         ]
-
-
-dropletLink : Maybe String -> Html Msg
-dropletLink ip_ =
-    case ip_ of
-        Just ip ->
-            a [ href ("http://" ++ ip), target "_blank" ] [ text ip ]
-
-        Nothing ->
-            div [] []

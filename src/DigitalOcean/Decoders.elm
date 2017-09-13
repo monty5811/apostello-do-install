@@ -48,7 +48,7 @@ decodeNetworks =
 decodeNetwork : Decoder Network
 decodeNetwork =
     decode Network
-        |> required "ip_address" Decode.string
+        |> required "ip_address" (Decode.string |> Decode.andThen (\t -> Decode.succeed (IPAddress t)))
 
 
 decodeLinks : Decoder DropletLinks

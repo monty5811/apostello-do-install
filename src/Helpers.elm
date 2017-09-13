@@ -2,7 +2,7 @@ module Helpers exposing (..)
 
 import Dict
 import DigitalOcean.Models exposing (..)
-import Models exposing (Flags, Model, RespStatus(..), Step(..))
+import Models exposing (..)
 import Regex
 
 
@@ -96,7 +96,7 @@ dropletV4 model =
             Nothing
 
 
-dropletIP : Model -> Maybe String
+dropletIP : Model -> Maybe IPAddress
 dropletIP model =
     let
         network =
