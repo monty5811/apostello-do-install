@@ -1,8 +1,8 @@
 module View exposing (view)
 
-import Dict
+import Autocomplete
 import DigitalOcean.Models exposing (..)
-import Helpers exposing (baseUrl, dropletIP)
+import Helpers exposing (acceptableTimeZones, baseUrl, dropletIP)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
@@ -216,79 +216,72 @@ setupView model =
         ]
 
 
-formField : String -> String -> Maybe String -> (String -> Msg) -> Html Msg
-formField name pholder help handler =
-    let
-        helpDiv =
-            case help of
-                Just helpText ->
-                    div [ class "ui label" ] [ text helpText ]
-
-                Nothing ->
-                    div [] []
-    in
-    div [ class "field" ]
-        [ label [] [ text name ]
-        , input [ type_ "text", placeholder pholder, onInput handler ] []
-        , helpDiv
-        ]
-
-
 apostelloFormHelp : Html Msg
 apostelloFormHelp =
-    div []
-        [ p [] [ text "We need some Twilio and email settings to setup apostello. You can change these values later by logging into your server, but adding them now is the easiest way to get up and running." ]
-        , p []
-            [ text "You can find more information in the "
-            , a
-                [ href "https://apostello.readthedocs.io/"
-                , target "_blank"
-                ]
-                [ text "documentation" ]
-            , text "."
-            ]
-        , p []
-            [ a [ href "https://www.mailgun.com/", target "_blank" ]
-                [ text "Mailgun"
-                ]
-            , text " is recommended for sending emails."
-            ]
-        ]
+    p [] [ text "We need to know your time zone to deploy apostello." ]
 
 
 apostelloSetup : ApostelloConfig -> Html Msg
 apostelloSetup config =
     div [ class "twelve wide column" ]
-        [ Html.form [ class "ui equal width form" ]
+        [ Html.div [ class "ui equal width form" ]
             [ apostelloFormHelp
-            , h3 [] [ text "Twilio Settings" ]
-            , div [ class "fields" ]
-                [ formField "Twilio Number" "Find me on Twilio" Nothing (UpdateApostelloConfig "fromNum")
-                , formField "Twilio Account SID" "Find me on Twilio" Nothing (UpdateApostelloConfig "accountSID")
-                ]
-            , div [ class "fields" ]
-                [ formField "Twilio Auth Token" "Find me on Twilio" Nothing (UpdateApostelloConfig "authToken")
-                , formField "Twilio Sending Cost" "Find me on Twilio" (Just "0.04 for UK, 0.0075 for USA, https://www.twilio.com/sms/pricing for all prices") (UpdateApostelloConfig "sendingCost")
-                ]
-            , h3 [] [ text "Email Settings" ]
-            , div [ class "fields" ]
-                [ formField "Email host" "" Nothing (UpdateApostelloConfig "emailHost")
-                , formField "Email to send from" "" Nothing (UpdateApostelloConfig "email")
-                ]
-            , div [ class "fields" ]
-                [ formField "Email user" "" Nothing (UpdateApostelloConfig "emailUser")
-                , formField "Email password" "" Nothing (UpdateApostelloConfig "emailPass")
-                ]
-            , h3 [] [ text "Other Settings" ]
-            , div [ class "fields" ]
-                [ formField "Time Zone" "Europe/London" (Just "A timezone from this list: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones") (UpdateApostelloConfig "timeZone") ]
+            , div [ class "fields" ] [ tzField config ]
             ]
         ]
 
 
+tzField : ApostelloConfig -> Html Msg
+tzField { numToShow, autoState, tzQuery, timezones, selectedTimeZone } =
+    div [ class "field" ]
+        [ label [] [ text "Time Zone" ]
+        , input
+            [ onInput SetTZQuery
+            , value <| tzFieldValue tzQuery selectedTimeZone
+            ]
+            []
+        , Html.map SetAutocompleteState
+            (Autocomplete.view autoCompleteConfig
+                numToShow
+                autoState
+                (acceptableTimeZones tzQuery timezones)
+            )
+        ]
+
+
+tzFieldValue : String -> Maybe String -> String
+tzFieldValue query selectedTimeZone =
+    case selectedTimeZone of
+        Just tz ->
+            tz
+
+        Nothing ->
+            query
+
+
+autoCompleteConfig : Autocomplete.ViewConfig String
+autoCompleteConfig =
+    let
+        customizedLi keySelected mouseSelected tz =
+            { attributes =
+                [ classList
+                    [ ( "autocomplete-item", True )
+                    , ( "is-selected", keySelected || mouseSelected )
+                    ]
+                ]
+            , children = [ Html.text tz ]
+            }
+    in
+    Autocomplete.viewConfig
+        { toId = identity
+        , ul = [ class "autocomplete-list" ]
+        , li = customizedLi -- given selection states and a person, create some Html!
+        }
+
+
 deployButton : Model -> Html Msg
 deployButton model =
-    if List.isEmpty model.config.keys then
+    if List.isEmpty model.config.keys || isNothing model.apostello.selectedTimeZone then
         div
             [ class "ui fluid disabled button"
             ]
@@ -299,6 +292,16 @@ deployButton model =
             , onClick Deploy
             ]
             [ text "Deploy Now!" ]
+
+
+isNothing : Maybe a -> Bool
+isNothing maybe =
+    case maybe of
+        Nothing ->
+            True
+
+        Just _ ->
+            False
 
 
 chooseSSHKeyView : Model -> List (Html Msg)

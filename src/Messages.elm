@@ -1,5 +1,6 @@
 module Messages exposing (..)
 
+import Autocomplete
 import DigitalOcean.Models exposing (..)
 import Http
 import Models exposing (..)
@@ -19,4 +20,8 @@ type Msg
     | ReceiveAction (Result Http.Error Action)
     | CheckDropletStatus
     | ReceiveDroplet (Result Http.Error Droplet)
-    | UpdateApostelloConfig String String
+    | UpdateDatabasePass String
+    | UpdateSecretKey String
+    | SetAutocompleteState Autocomplete.Msg
+    | SelectTimeZone String
+    | SetTZQuery String

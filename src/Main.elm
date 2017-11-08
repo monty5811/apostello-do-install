@@ -29,7 +29,7 @@ init flags =
     ( model
     , Cmd.batch
         [ fetchData model
-        , generateRandomApostelloVal "dbPass"
-        , generateRandomApostelloVal "secretKey"
+        , generateRandomApostelloVal UpdateDatabasePass
+        , generateRandomApostelloVal UpdateSecretKey
         ]
     )

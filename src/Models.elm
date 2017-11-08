@@ -3,21 +3,11 @@ module Models
         ( ApostelloConfig
         , Flags
         , Model
-        , RespStatus
-            ( NoResp
-            , RespError
-            , RespOk
-            )
-        , Step
-            ( ChooseSetup
-            , Deployed
-            , DeployedNoIp
-            , Deploying
-            , NotLoggedIn
-            , PullData
-            )
+        , RespStatus(NoResp, RespError, RespOk)
+        , Step(ChooseSetup, Deployed, DeployedNoIp, Deploying, NotLoggedIn, PullData)
         )
 
+import Autocomplete
 import Dict
 import DigitalOcean.Models
     exposing
@@ -46,7 +36,14 @@ type RespStatus
 
 
 type alias ApostelloConfig =
-    Dict.Dict String String
+    { tzQuery : String
+    , autoState : Autocomplete.State
+    , numToShow : Int
+    , timezones : List String
+    , selectedTimeZone : Maybe String
+    , dbPass : String
+    , secretKey : String
+    }
 
 
 type alias Model =

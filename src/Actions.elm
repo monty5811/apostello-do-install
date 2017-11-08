@@ -25,9 +25,9 @@ fetchData model =
             Cmd.none
 
 
-generateRandomApostelloVal : String -> Cmd Msg
-generateRandomApostelloVal field =
-    Random.generate (UpdateApostelloConfig field) (Random.String.string 64 Random.Char.english)
+generateRandomApostelloVal : (String -> Msg) -> Cmd Msg
+generateRandomApostelloVal tagger =
+    Random.generate tagger (Random.String.string 64 Random.Char.english)
 
 
 deployDroplet : Model -> Cmd Msg

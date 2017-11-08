@@ -39,40 +39,10 @@ createDropletBody config apostello =
 
 
 userData : ApostelloConfig -> String
-userData config =
+userData apostello =
     let
-        dbPass =
-            Maybe.withDefault "change_me_to_a_long_string" (Dict.get "dbPass" config)
-
-        secretKey =
-            Maybe.withDefault "change_me_to_a_long_string" (Dict.get "secretKey" config)
-
-        accountSID =
-            Maybe.withDefault "" (Dict.get "accountSID" config)
-
-        authToken =
-            Maybe.withDefault "" (Dict.get "authToken" config)
-
-        fromNum =
-            Maybe.withDefault "0.04" (Dict.get "fromNum" config)
-
-        sendingCost =
-            Maybe.withDefault "" (Dict.get "sendingCost" config)
-
-        emailHost =
-            Maybe.withDefault "" (Dict.get "emailHost" config)
-
-        emailUser =
-            Maybe.withDefault "" (Dict.get "emailUser" config)
-
-        emailPass =
-            Maybe.withDefault "" (Dict.get "emailPass" config)
-
-        email =
-            Maybe.withDefault "" (Dict.get "email" config)
-
-        timeZone =
-            Maybe.withDefault "Europe/London" (Dict.get "timeZone" config)
+        tz =
+            Maybe.withDefault "Europe/London" apostello.selectedTimeZone
     in
     """#cloud-config
 users:
@@ -88,27 +58,17 @@ write_files:
        # Let's Encrypt (free SSL):
        le_email: ''
        # Database settings
-       db_password: """ ++ dbPass ++ """
+       db_password: """ ++ apostello.dbPass ++ """
        # Nginx settings
        nginx_server_name: "server_name_replace_me"
        # Application Settings
-       django_secret_key: """ ++ secretKey ++ """
+       django_secret_key: """ ++ apostello.secretKey ++ """
        # this is used in the account related emails and should match your server settings
        account_default_http_protocol: 'https'
-       # Twilio Credentials
-       twilio_account_sid: """ ++ accountSID ++ """
-       twilio_auth_token: """ ++ authToken ++ """
-       twilio_from_num: """ ++ fromNum ++ """
-       twilio_sending_cost: """ ++ sendingCost ++ """
        # Whitelisted domains
        whitelisted_login_domains:
-       # Email
-       django_email_host: """ ++ emailHost ++ """
-       django_email_host_user: """ ++ emailUser ++ """
-       django_email_host_password: """ ++ emailPass ++ """
-       django_from_email: """ ++ email ++ """
        # locale and time zone:
-       django_time_zone: """ ++ timeZone ++ """
+       django_time_zone: """ ++ tz ++ """
        # Elvanto
        elvanto_key:
        country_code:
