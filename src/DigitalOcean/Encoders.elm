@@ -72,12 +72,9 @@ write_files:
        # Elvanto
        elvanto_key:
        country_code:
-       # Opbeat
-       opbeat_organization_id:
-       opbeat_app_id:
-       opbeat_secret_token:
-       opbeat_js_org_id:
-       opbeat_js_app_id:
+       # rollbar
+       rollbar_access_token: ''
+       rollbar_access_token_client: ''
        cm_server_key:
        cm_sender_id:
     path: /home/apostello/custom_vars.yml
