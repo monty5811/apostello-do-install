@@ -1,20 +1,32 @@
 module Update exposing (update)
 
 import Actions exposing (..)
-import Autocomplete
+import Analytics exposing (Event(..), logEvent)
 import Dict
-import DigitalOcean.Models exposing (..)
+import DigitalOcean exposing (..)
 import Helpers exposing (..)
+import Menu
 import Messages exposing (..)
 import Models exposing (..)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        NoOp ->
+    case model of
+        Authed aModel ->
+            let
+                ( newModel, cmd ) =
+                    updateHelp msg aModel
+            in
+            ( Authed newModel, cmd )
+
+        NotAuthed _ ->
             ( model, Cmd.none )
 
+
+updateHelp : Msg -> AuthedModel -> ( AuthedModel, Cmd Msg )
+updateHelp msg model =
+    case msg of
         UpdateDatabasePass pass ->
             let
                 apostello =
@@ -35,9 +47,6 @@ update msg model =
             in
             ( { model | apostello = newApostello }, Cmd.none )
 
-        FetchSSHKeys ->
-            ( { model | currentStep = PullData NoResp }, fetchSSHKeys model )
-
         ReceiveKeys (Ok keys) ->
             ( { model | sshKeys = keys, currentStep = ChooseSetup }, Cmd.none )
 
@@ -56,7 +65,7 @@ update msg model =
                     model.config
 
                 newConfig =
-                    { config | keys = addOrRemoveKey model.config.keys key }
+                    { config | keys = addOrRemoveKey config.keys key }
             in
             ( { model | config = newConfig }, Cmd.none )
 
@@ -66,7 +75,7 @@ update msg model =
                     model.config
 
                 newConfig =
-                    { config | region = region, size = "512mb" }
+                    { config | region = region, size = "s-1vcpu-1gb" }
             in
             ( { model | config = newConfig }, Cmd.none )
 
@@ -92,6 +101,7 @@ update msg model =
                         , numToShow =
                             if String.length str == 0 then
                                 0
+
                             else
                                 10
                     }
@@ -107,15 +117,15 @@ update msg model =
                     { apostello
                         | selectedTimeZone = Just tz
                         , numToShow = 0
-                        , autoState = Autocomplete.empty
+                        , autoState = Menu.empty
                     }
             in
             ( { model | apostello = newApostello }, Cmd.none )
 
-        SetAutocompleteState autoMsg ->
+        SetMenuState autoMsg ->
             let
                 ( newState, maybeMsg ) =
-                    Autocomplete.update
+                    Menu.update
                         autoCompleteConfig
                         autoMsg
                         model.apostello.numToShow
@@ -136,10 +146,15 @@ update msg model =
                     ( newModel, Cmd.none )
 
                 Just updateMsg ->
-                    update updateMsg newModel
+                    updateHelp updateMsg newModel
 
         Deploy ->
-            ( { model | currentStep = Deploying NoResp }, deployDroplet model )
+            ( { model | currentStep = Deploying NoResp }
+            , Cmd.batch
+                [ deployDroplet model.accessToken model.config model.apostello
+                , logEvent DropletDeployed
+                ]
+            )
 
         ReceiveCreateResp (Ok resp) ->
             ( { model | createResp = Just resp, currentStep = Deploying RespOk }, Cmd.none )
@@ -148,16 +163,16 @@ update msg model =
             ( { model | createResp = Nothing, currentStep = Deploying RespError }, Cmd.none )
 
         CheckActionStatus ->
-            ( model, fetchAction model )
+            ( model, fetchAction model.accessToken model.createResp )
 
         ReceiveAction (Ok action) ->
-            ( { model | createAction = Just action, currentStep = action2Step action }, fetchDropletInfo model )
+            ( { model | createAction = Just action, currentStep = action2Step action }, fetchDropletInfo model.accessToken model.createResp )
 
         ReceiveAction (Err _) ->
             ( { model | createAction = Nothing, currentStep = Deploying RespError }, Cmd.none )
 
         CheckDropletStatus ->
-            ( model, fetchDropletInfo model )
+            ( model, fetchDropletInfo model.accessToken model.createResp )
 
         ReceiveDroplet (Ok droplet) ->
             let
@@ -189,14 +204,15 @@ update msg model =
             ( model, Cmd.none )
 
 
-autoCompleteConfig : Autocomplete.UpdateConfig Msg String
+autoCompleteConfig : Menu.UpdateConfig Msg String
 autoCompleteConfig =
-    Autocomplete.updateConfig
+    Menu.updateConfig
         { toId = identity
         , onKeyDown =
             \code maybeId ->
                 if code == 13 then
                     Maybe.map SelectTimeZone maybeId
+
                 else
                     Nothing
         , onTooLow = Nothing
@@ -206,3 +222,19 @@ autoCompleteConfig =
         , onMouseClick = \id -> Just <| SelectTimeZone id
         , separateSelections = False
         }
+
+
+action2Step : Action -> Step
+action2Step action =
+    case action.status of
+        InProgess ->
+            Deploying RespOk
+
+        Completed ->
+            DeployedNoIp
+
+        Errored ->
+            Deploying RespError
+
+        UnknownActionStatus ->
+            Deploying RespOk

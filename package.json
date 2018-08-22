@@ -3,21 +3,13 @@
   "version": "0.0.1",
   "description": "",
   "dependencies": {
-    "elm": "0.18.0",
+    "elm": "^0.19.0-bugfix1",
     "elm-format": "exp",
-    "elm-webpack-loader": "^4.3.1",
-    "file-loader": "^0.11.2",
     "prettier": "^1.5.2",
-    "webpack": "^3.2.0"
+    "uglify-js": "^3.4.7"
   },
   "scripts": {
-    "prebuild": "elm-make --yes",
-    "prestart": "npm run prebuild",
-    "build": "webpack",
-    "watch": "WATCH=true webpack --watch --color --progress",
-    "format-elm": "elm-format --yes src",
-    "format-js": "prettier --single-quote --trailing-comma es5 --write \"src/**/*.js\"",
-    "format": "yarn format-elm && yarn format-js"
+    "format-js": "prettier --single-quote --trailing-comma es5 --write \"src/**/*.js\""
   },
   "author": "",
   "license": "MIT"

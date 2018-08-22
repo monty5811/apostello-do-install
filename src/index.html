@@ -1,8 +1,16 @@
 <head>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-53156632-6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-53156632-6');
+  </script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>apostello installer</title>
-  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="shortcut icon" href="/static/favicon.ico">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.min.css">
   <style>
   body {
@@ -27,5 +35,21 @@
   </style>
 </head>
 <body>
-<script src="app.js"></script>
+  <div id="elm"></div>
+  <script src="app.js"></script>
+  <script>
+    function handleDOMContentLoaded() {
+      // setup elm
+      const app = Elm.Main.init({
+        node: document.getElementById('elm'),
+        flags: {url: document.URL},
+      }
+      );
+      app.ports.gaEvent.subscribe(function(e) {
+        gtag('event', e.name, e.params);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', handleDOMContentLoaded, false);
+  </script>
 </body>

@@ -1,55 +1,81 @@
-module Actions exposing (..)
+module Actions exposing (deployDroplet, fetchAction, fetchData, fetchDropletInfo, fetchRegions, fetchSSHKeys, generateRandomApostelloVal)
 
-import DigitalOcean.Api exposing (..)
+import Char exposing (fromCode)
+import DigitalOcean exposing (..)
 import Http
 import Messages exposing (..)
 import Models exposing (..)
-import Random
-import Random.Char
-import Random.String
+import Random exposing (Generator, andThen, float, int, list, map)
+import String exposing (fromList)
 
 
 fetchData : Model -> Cmd Msg
 fetchData model =
-    case model.currentStep of
-        NotLoggedIn ->
+    case model of
+        NotAuthed _ ->
             Cmd.none
 
-        PullData _ ->
-            Cmd.batch
-                [ fetchSSHKeys model
-                , fetchRegions model
-                ]
+        Authed aModel ->
+            case aModel.currentStep of
+                PullData _ ->
+                    Cmd.batch
+                        [ fetchSSHKeys aModel.accessToken
+                        , fetchRegions aModel.accessToken
+                        ]
 
-        _ ->
-            Cmd.none
+                _ ->
+                    Cmd.none
 
 
 generateRandomApostelloVal : (String -> Msg) -> Cmd Msg
 generateRandomApostelloVal tagger =
-    Random.generate tagger (Random.String.string 64 Random.Char.english)
+    Random.generate tagger (string 64 ascii)
 
 
-deployDroplet : Model -> Cmd Msg
-deployDroplet model =
-    Http.send ReceiveCreateResp (postCreateDroplet model.accessToken model.config model.apostello)
+deployDroplet : AccessToken -> Config -> ApostelloConfig -> Cmd Msg
+deployDroplet accessToken config apostelloConfig =
+    Http.send ReceiveCreateResp (postCreateDroplet accessToken config apostelloConfig)
 
 
-fetchSSHKeys : Model -> Cmd Msg
-fetchSSHKeys model =
-    Http.send ReceiveKeys (getKeys model.accessToken)
+fetchSSHKeys : AccessToken -> Cmd Msg
+fetchSSHKeys accessToken =
+    Http.send ReceiveKeys (getKeys accessToken)
 
 
-fetchRegions : Model -> Cmd Msg
-fetchRegions model =
-    Http.send ReceiveRegions (getRegions model.accessToken)
+fetchRegions : AccessToken -> Cmd Msg
+fetchRegions accessToken =
+    Http.send ReceiveRegions (getRegions accessToken)
 
 
-fetchAction : Model -> Cmd Msg
-fetchAction model =
-    Http.send ReceiveAction (getAction model.accessToken model.createResp)
+fetchAction : AccessToken -> Maybe CreateResp -> Cmd Msg
+fetchAction accessToken createResp =
+    Http.send ReceiveAction (getAction accessToken createResp)
 
 
-fetchDropletInfo : Model -> Cmd Msg
-fetchDropletInfo model =
-    Http.send ReceiveDroplet (getDropletInfo model.accessToken model.createResp)
+fetchDropletInfo : AccessToken -> Maybe CreateResp -> Cmd Msg
+fetchDropletInfo accessToken createResp =
+    Http.send ReceiveDroplet (getDropletInfo accessToken createResp)
+
+
+
+-- Copied from random-extra until it is upgraded to 0.19
+
+
+string : Int -> Generator Char -> Generator String
+string stringLength charGenerator =
+    map fromList (list stringLength charGenerator)
+
+
+{-| Generate a random character within a certain keyCode range
+lowerCaseLetter = char 65 90
+-}
+char : Int -> Int -> Generator Char
+char start end =
+    map fromCode (int start end)
+
+
+{-| Generate a random ASCII Character
+-}
+ascii : Generator Char
+ascii =
+    char 0 127

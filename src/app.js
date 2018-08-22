@@ -9,8 +9,8 @@ function handleDOMContentLoaded() {
   const app = Elm.Main.fullscreen({
     url: document.URL,
   });
-  app.ports.event.subscribe(function(e) {
-    ga('send', 'event', e.cat, e.act);
+  app.ports.gaEvent.subscribe(function(e) {
+    gtag('event', e.name, e.params);
   });
 }
 

@@ -1,28 +1,19 @@
-module Models
-    exposing
-        ( ApostelloConfig
-        , Flags
-        , Model
-        , RespStatus(NoResp, RespError, RespOk)
-        , Step(ChooseSetup, Deployed, DeployedNoIp, Deploying, NotLoggedIn, PullData)
-        )
+module Models exposing
+    ( ApostelloConfig
+    , AuthedModel
+    , Flags
+    , Model(..)
+    , RespStatus(..)
+    , Step(..)
+    )
 
-import Autocomplete
 import Dict
-import DigitalOcean.Models
-    exposing
-        ( Action
-        , Config
-        , CreateResp
-        , IPAddress
-        , Region
-        , SSHKey
-        )
+import DigitalOcean exposing (..)
+import Menu
 
 
 type Step
-    = NotLoggedIn
-    | PullData RespStatus
+    = PullData RespStatus
     | ChooseSetup
     | Deploying RespStatus
     | DeployedNoIp
@@ -37,7 +28,7 @@ type RespStatus
 
 type alias ApostelloConfig =
     { tzQuery : String
-    , autoState : Autocomplete.State
+    , autoState : Menu.State
     , numToShow : Int
     , timezones : List String
     , selectedTimeZone : Maybe String
@@ -46,9 +37,13 @@ type alias ApostelloConfig =
     }
 
 
-type alias Model =
+type Model
+    = NotAuthed String
+    | Authed AuthedModel
+
+
+type alias AuthedModel =
     { url : String
-    , accessToken : Maybe String
     , sshKeys : List SSHKey
     , regions : List Region
     , config : Config
@@ -56,6 +51,7 @@ type alias Model =
     , createAction : Maybe Action
     , currentStep : Step
     , apostello : ApostelloConfig
+    , accessToken : AccessToken
     }
 
 

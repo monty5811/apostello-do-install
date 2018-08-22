@@ -1,25 +1,28 @@
 module View exposing (view)
 
-import Autocomplete
-import DigitalOcean.Models exposing (..)
+import Browser
+import DigitalOcean exposing (..)
 import Helpers exposing (acceptableTimeZones, baseUrl, dropletIP)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Menu
 import Messages exposing (Msg(..))
 import Models exposing (..)
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
-    div []
-        [ div [ class "ui grid container", style [ ( "min-height", "100vh" ) ] ]
+    { title = "apostello installer"
+    , body =
+        [ div [ class "ui grid container", style "min-height" "100vh" ]
             [ uiDivider
             , div [ class "centered row" ] [ innerView model ]
             , uiDivider
             ]
         , footer
         ]
+    }
 
 
 uiDivider : Html Msg
@@ -53,45 +56,48 @@ footer =
 
 innerView : Model -> Html Msg
 innerView model =
-    case model.currentStep of
-        NotLoggedIn ->
-            landingView model
+    case model of
+        NotAuthed url ->
+            landingView url
 
-        PullData NoResp ->
-            pullingDataView model
+        Authed aModel ->
+            case aModel.currentStep of
+                PullData NoResp ->
+                    pullingDataView
 
-        PullData RespOk ->
-            pullingDataView model
+                PullData RespOk ->
+                    pullingDataView
 
-        PullData RespError ->
-            errorView model
+                PullData RespError ->
+                    errorView aModel
 
-        ChooseSetup ->
-            if List.isEmpty model.sshKeys then
-                noKeysView
-            else
-                setupView model
+                ChooseSetup ->
+                    if List.isEmpty aModel.sshKeys then
+                        noKeysView
 
-        Deploying NoResp ->
-            deployingView model
+                    else
+                        setupView aModel
 
-        Deploying RespOk ->
-            deployingView model
+                Deploying NoResp ->
+                    deployingView
 
-        Deploying RespError ->
-            deployErrorView model
+                Deploying RespOk ->
+                    deployingView
 
-        DeployedNoIp ->
-            deployingView model
+                Deploying RespError ->
+                    deployErrorView aModel
 
-        Deployed ip ->
-            deployedView ip
+                DeployedNoIp ->
+                    deployingView
+
+                Deployed ip ->
+                    deployedView ip
 
 
-landingView : Model -> Html Msg
-landingView model =
+landingView : String -> Html Msg
+landingView url =
     div [ class "ui raised segment ten wide centered column" ]
-        [ img [ src "/apostello-logo.svg", style [ ( "height", "5em" ) ] ] []
+        [ img [ src "/static/apostello-logo.svg", style "height" "5em" ] []
         , h1 [] [ text "apostello installer for Digital Ocean" ]
         , p [] [ text "Install apostello on Digital Ocean in just a few minutes." ]
         , uiDivider
@@ -105,25 +111,25 @@ landingView model =
             , text "  or  "
             , a
                 [ class "ui large green button"
-                , href (loginLink model)
+                , href (loginLink url)
                 ]
                 [ text "Login to Digital Ocean" ]
             ]
         ]
 
 
-loginLink : Model -> String
-loginLink model =
+loginLink : String -> String
+loginLink url =
     [ "https://cloud.digitalocean.com/v1/oauth/authorize?client_id="
     , "e6861183e85ec41863a83203df903d2de2e1af690453de126657e65c19c6d547"
     , "&response_type=token&redirect_uri="
-    , baseUrl model.url
+    , baseUrl url
     , "&scope=read write"
     ]
         |> String.concat
 
 
-errorView : Model -> Html Msg
+errorView : AuthedModel -> Html Msg
 errorView model =
     div [ class "ui raised inverted red segment fourteen wide centered column" ]
         [ p [] [ text "Something went wrong when we tried to talk to Digital Ocean :-(" ]
@@ -133,8 +139,8 @@ errorView model =
         ]
 
 
-deployingView : Model -> Html Msg
-deployingView model =
+deployingView : Html msg
+deployingView =
     div [ class "ui raised segment eight wide centered column" ]
         [ div [ class "ui active inverted dimmer" ]
             [ div [ class "ui massive text loader" ]
@@ -143,7 +149,7 @@ deployingView model =
         ]
 
 
-deployErrorView : Model -> Html Msg
+deployErrorView : AuthedModel -> Html Msg
 deployErrorView model =
     div [ class "ui raised inverted red segment fourteen wide centered column" ]
         [ p [] [ text "Something went wrong when we tried to talk to Digital Ocean :-(" ]
@@ -156,13 +162,13 @@ deployErrorView model =
         ]
 
 
-restartButton : Model -> Html Msg
+restartButton : AuthedModel -> Html Msg
 restartButton model =
     a [ class "ui fluid button", href (baseUrl model.url) ] [ text "Restart" ]
 
 
-pullingDataView : Model -> Html Msg
-pullingDataView model =
+pullingDataView : Html msg
+pullingDataView =
     div [ class "ui raised segment eight wide centered column" ]
         [ div [ class "ui active inverted dimmer" ]
             [ div [ class "ui large text loader" ]
@@ -184,7 +190,7 @@ noKeysView =
         ]
 
 
-setupView : Model -> Html Msg
+setupView : AuthedModel -> Html Msg
 setupView model =
     div []
         [ div
@@ -216,7 +222,7 @@ setupView model =
         ]
 
 
-apostelloFormHelp : Html Msg
+apostelloFormHelp : Html msg
 apostelloFormHelp =
     p [] [ text "We need to know your time zone to deploy apostello." ]
 
@@ -240,8 +246,8 @@ tzField { numToShow, autoState, tzQuery, timezones, selectedTimeZone } =
             , value <| tzFieldValue tzQuery selectedTimeZone
             ]
             []
-        , Html.map SetAutocompleteState
-            (Autocomplete.view autoCompleteConfig
+        , Html.map SetMenuState
+            (Menu.view autoCompleteConfig
                 numToShow
                 autoState
                 (acceptableTimeZones tzQuery timezones)
@@ -259,7 +265,7 @@ tzFieldValue query selectedTimeZone =
             query
 
 
-autoCompleteConfig : Autocomplete.ViewConfig String
+autoCompleteConfig : Menu.ViewConfig String
 autoCompleteConfig =
     let
         customizedLi keySelected mouseSelected tz =
@@ -272,26 +278,32 @@ autoCompleteConfig =
             , children = [ Html.text tz ]
             }
     in
-    Autocomplete.viewConfig
+    Menu.viewConfig
         { toId = identity
         , ul = [ class "autocomplete-list" ]
         , li = customizedLi -- given selection states and a person, create some Html!
         }
 
 
-deployButton : Model -> Html Msg
-deployButton model =
-    if List.isEmpty model.config.keys || isNothing model.apostello.selectedTimeZone then
-        div
-            [ class "ui fluid disabled button"
-            ]
-            [ text "Deploy Now!" ]
+deployButton : AuthedModel -> Html Msg
+deployButton { config, apostello } =
+    if List.isEmpty config.keys || String.isEmpty config.size || isNothing apostello.selectedTimeZone then
+        disabledDeployButton
+
     else
         div
             [ class "ui fluid blue button"
             , onClick Deploy
             ]
             [ text "Deploy Now!" ]
+
+
+disabledDeployButton : Html msg
+disabledDeployButton =
+    div
+        [ class "ui fluid disabled button"
+        ]
+        [ text "Deploy Now!" ]
 
 
 isNothing : Maybe a -> Bool
@@ -304,7 +316,7 @@ isNothing maybe =
             False
 
 
-chooseSSHKeyView : Model -> List (Html Msg)
+chooseSSHKeyView : AuthedModel -> List (Html Msg)
 chooseSSHKeyView model =
     [ h3 [] [ text "Please choose your SSH key(s)" ]
     , div [] (List.map (sshKeyView model.config.keys) model.sshKeys)
@@ -315,6 +327,7 @@ sshLabelClass : List SSHKey -> SSHKey -> String
 sshLabelClass list key =
     if List.member key list then
         "ui green label"
+
     else
         "ui label"
 
@@ -323,6 +336,7 @@ labelClass : a -> a -> String
 labelClass active current =
     if current == active then
         "ui green label"
+
     else
         "ui label"
 
@@ -336,7 +350,7 @@ sshKeyView activeKeys key =
         [ text key.name ]
 
 
-chooseRegionView : Model -> List (Html Msg)
+chooseRegionView : AuthedModel -> List (Html Msg)
 chooseRegionView model =
     [ h3 [] [ text "Choose a region" ]
     , div []
@@ -355,10 +369,17 @@ regionView activeRegion region =
         [ text region.name ]
 
 
-chooseSizeView : Model -> List (Html Msg)
+chooseSizeView : AuthedModel -> List (Html Msg)
 chooseSizeView model =
+    let
+        selectedSize =
+            model.config.size
+
+        allSizes =
+            model.config.region.sizes
+    in
     [ h3 [] [ text "Choose a droplet size" ]
-    , div [] (List.map (sizeView model.config.size) model.config.region.sizes)
+    , div [] (List.map (sizeView selectedSize) allSizes)
     ]
 
 

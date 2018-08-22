@@ -1,22 +1,27 @@
 module Subscriptions exposing (subscriptions)
 
-import Autocomplete
+import Menu
 import Messages exposing (Msg(..))
 import Models exposing (..)
-import Time exposing (Time, second)
+import Time
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Sub.map SetAutocompleteState Autocomplete.subscription
-        , case model.currentStep of
-            Deploying RespOk ->
-                Time.every (5 * second) (\_ -> CheckActionStatus)
-
-            DeployedNoIp ->
-                Time.every (5 * second) (\_ -> CheckDropletStatus)
-
-            _ ->
+        [ Sub.map SetMenuState Menu.subscription
+        , case model of
+            NotAuthed _ ->
                 Sub.none
+
+            Authed aModel ->
+                case aModel.currentStep of
+                    Deploying RespOk ->
+                        Time.every 5000 (\_ -> CheckActionStatus)
+
+                    DeployedNoIp ->
+                        Time.every 5000 (\_ -> CheckDropletStatus)
+
+                    _ ->
+                        Sub.none
         ]
