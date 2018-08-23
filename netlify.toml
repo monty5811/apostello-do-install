@@ -1,3 +1,7 @@
-[build]
+[Settings]
+  ID = "25ca7a94-240a-4561-b3cb-1fc5d95a835a"
+
+[Build]
   command = "make build"
-  publish = "dist"
+  Publish = "dist"
+  Functions = ""

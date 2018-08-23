@@ -13,7 +13,8 @@ export PATH := $(NPM_PATH):$(PATH)
 all: elm
 
 assets:
-		@cp -r ${SRC_DIR}/static/ ${DIST_DIR}
+		@mkdir ${DIST_DIR}
+		@cp -r ${SRC_DIR}/static ${DIST_DIR}/static
 		@cp -r ${SRC_DIR}/index.html ${DIST_DIR}
 
 build: clean assets elmoptimized minify
