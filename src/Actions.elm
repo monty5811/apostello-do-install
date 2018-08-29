@@ -6,6 +6,7 @@ import Http
 import Messages exposing (..)
 import Models exposing (..)
 import Random exposing (Generator, andThen, float, int, list, map)
+import Random.String exposing (latin)
 import String exposing (fromList)
 
 
@@ -29,7 +30,7 @@ fetchData model =
 
 generateRandomApostelloVal : (String -> Msg) -> Cmd Msg
 generateRandomApostelloVal tagger =
-    Random.generate tagger (string 64 ascii)
+    Random.generate tagger (string 64 latin)
 
 
 deployDroplet : AccessToken -> Config -> ApostelloConfig -> Cmd Msg
@@ -55,27 +56,3 @@ fetchAction accessToken createResp =
 fetchDropletInfo : AccessToken -> Maybe CreateResp -> Cmd Msg
 fetchDropletInfo accessToken createResp =
     Http.send ReceiveDroplet (getDropletInfo accessToken createResp)
-
-
-
--- Copied from random-extra until it is upgraded to 0.19
-
-
-string : Int -> Generator Char -> Generator String
-string stringLength charGenerator =
-    map fromList (list stringLength charGenerator)
-
-
-{-| Generate a random character within a certain keyCode range
-lowerCaseLetter = char 65 90
--}
-char : Int -> Int -> Generator Char
-char start end =
-    map fromCode (int start end)
-
-
-{-| Generate a random ASCII Character
--}
-ascii : Generator Char
-ascii =
-    char 0 127

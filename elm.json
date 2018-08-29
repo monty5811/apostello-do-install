@@ -15,7 +15,8 @@
             "elm/json": "1.0.0",
             "elm/random": "1.0.0",
             "elm/regex": "1.0.0",
-            "elm/time": "1.0.0"
+            "elm/time": "1.0.0",
+            "elm-community/random-extra": "3.0.0"
         },
         "indirect": {
             "elm/url": "1.0.0",
