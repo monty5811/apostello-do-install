@@ -339,7 +339,7 @@ createDropletBody config apostello =
     [ ( "name", Encode.string "apostello" )
     , ( "region", Encode.string config.region.slug )
     , ( "size", Encode.string config.size )
-    , ( "image", Encode.string "ubuntu-14-04-x64" )
+    , ( "image", Encode.string "ubuntu-18-04-x64" )
     , ( "ssh_keys", Encode.list encodeKey config.keys )
     , ( "backups", Encode.bool False )
     , ( "ipv6", Encode.bool True )
@@ -371,11 +371,11 @@ write_files:
        # Let's Encrypt (free SSL):
        le_email: ''
        # Database settings
-       db_password: """ ++ apostello.dbPass ++ """
+       db_password: '""" ++ apostello.dbPass ++ """'
        # Nginx settings
        nginx_server_name: "server_name_replace_me"
        # Application Settings
-       django_secret_key: """ ++ apostello.secretKey ++ """
+       django_secret_key: '""" ++ apostello.secretKey ++ """'
        # this is used in the account related emails and should match your server settings
        account_default_http_protocol: 'https'
        # Whitelisted domains

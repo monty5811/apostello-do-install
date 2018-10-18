@@ -6,7 +6,8 @@ import Http
 import Messages exposing (..)
 import Models exposing (..)
 import Random exposing (Generator, andThen, float, int, list, map)
-import Random.String exposing (latin)
+import Random.Char exposing (char)
+import Random.String exposing (string)
 import String exposing (fromList)
 
 
@@ -30,7 +31,7 @@ fetchData model =
 
 generateRandomApostelloVal : (String -> Msg) -> Cmd Msg
 generateRandomApostelloVal tagger =
-    Random.generate tagger (string 64 latin)
+    Random.generate tagger (string 64 (char 48 90))
 
 
 deployDroplet : AccessToken -> Config -> ApostelloConfig -> Cmd Msg
